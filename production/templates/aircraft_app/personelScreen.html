@@ -1,0 +1,197 @@
+{% extends "aircraft_app/base.html" %}
+{% block content %}
+<h2 class="mb-4">Team Panel</h2>
+<p><strong>Kullanıcı:</strong> <span id="user-name">...</span></p>
+<p><strong>Takım:</strong> <span id="team-name">...</span></p>
+
+<div class="mb-3">
+  <label>Uçak Seç</label>
+  <select class="form-select" id="aircraftSelect"></select>
+</div>
+
+<div class="mb-3">
+  <label>Parça Seç</label>
+  <select class="form-select" id="partSelect"></select>
+</div>
+
+<div class="mb-3">
+  <label>Adet</label>
+  <input type="number" id="quantity" class="form-control" value="1" min="1" />
+</div>
+
+<button class="btn btn-primary mb-4" onclick="producePart()">Parça Üret</button>
+
+<div id="resultMessage"></div>
+
+
+<button class="btn btn-info mb-4" onclick="loadAllPartsForTeam()">Takımın Tüm Parçalarını Listele</button>
+
+<div id="resultMessage"></div>
+
+<h4>Takımın Parçaları</h4>
+<ul id="teamPartList"></ul>
+
+<script>
+  const userData = JSON.parse(localStorage.getItem('loggedInUser'));
+  if (!userData) {
+    window.location.href = '/login/';
+  }
+  else if(userData && userData.team==4){
+    window.location.href = '/produce/';
+
+  }
+
+  document.getElementById('user-name').textContent = userData.username;
+  document.getElementById('team-name').textContent = "Yükleniyor...";
+
+  async function fetchTeamName() {
+    const res = await fetch(`/app/team/${userData.team}/`);
+    const data = await res.json();
+    document.getElementById('team-name').textContent = data.name;
+  }
+
+  async function fetchAircrafts() {
+    const res = await fetch('/app/aircrafts/');
+    const data = await res.json();
+    const sel = document.getElementById('aircraftSelect');
+    sel.innerHTML = '';
+    data.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.name;
+      sel.appendChild(opt);
+    });
+    loadParts(); // ilk uçak için parça yükle
+  }
+
+async function loadParts() {
+  const aircraftId = document.getElementById('aircraftSelect').value;
+  const res = await fetch(`/app/aircraft/${aircraftId}/parts/`);
+  const parts = await res.json();
+  const partSel = document.getElementById('partSelect');
+  partSel.innerHTML = '';
+
+  // Takıma göre izin verilen part_type belirle
+  let allowedPartType = null;
+  switch (userData.team) {
+    case 1:
+      allowedPartType = 'Kanat';
+      break;
+    case 2:
+      allowedPartType = 'Gövde';
+      break;
+    case 3:
+      allowedPartType = 'Kuyruk';
+      break;
+    case 4:
+      allowedPartType = 'Aviyonik';
+      break;
+    default:
+      allowedPartType = null;
+  }
+
+  // Eğer tanımlı değilse hiçbiri gösterilmesin
+  const filteredParts = allowedPartType
+    ? parts.filter(p => p.part_type === allowedPartType)
+    : [];
+
+  // Seçenekleri doldur
+  if (filteredParts.length > 0) {
+    filteredParts.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      partSel.appendChild(opt);
+    });
+  } else {
+    const opt = document.createElement('option');
+    opt.textContent = 'Bu uçak için uygun parça yok.';
+    opt.disabled = true;
+    opt.selected = true;
+    partSel.appendChild(opt);
+  }
+}
+
+
+  async function producePart() {
+    const partId = document.getElementById('partSelect').value;
+    const quantity = document.getElementById('quantity').value;
+
+    const res = await fetch('/app/produce-part/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        part_id: partId,
+        quantity: quantity,
+        team_id: userData.team
+      })
+    });
+
+    const data = await res.json();
+    const result = document.getElementById('resultMessage');
+    if (res.ok) {
+      result.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+      fetchTeamParts(userData.team); // listeyi güncelle
+    } else {
+      result.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    }
+  }
+
+  async function fetchTeamParts(teamId) {
+    const list = document.getElementById('teamPartList');
+    list.innerHTML = '';
+    const res = await fetch(`/app/team/${teamId}/parts/`);
+    const parts = await res.json();
+    parts.forEach(p => {
+      const item = document.createElement('li');
+      item.textContent = `${p.name} (Adet: ${p.stock_count})`;
+      list.appendChild(item);
+    });
+  }
+
+  async function loadAllPartsForTeam() {
+    const res = await fetch('/app/parts/');
+    const parts = await res.json();
+
+    // Filter the parts based on team
+    let allowedPartType = null;
+    switch (userData.team) {
+      case 1:
+        allowedPartType = 'Kanat';
+        break;
+      case 2:
+        allowedPartType = 'Gövde';
+        break;
+      case 3:
+        allowedPartType = 'Kuyruk';
+        break;
+      case 4:
+        allowedPartType = 'Aviyonik';
+        break;
+      default:
+        allowedPartType = null;
+    }
+
+    const filteredParts = allowedPartType
+      ? parts.filter(p => p.part_type === allowedPartType)
+      : parts;
+
+    const list = document.getElementById('teamPartList');
+    list.innerHTML = ''; // Clear existing list
+
+    filteredParts.forEach(p => {
+      const item = document.createElement('li');
+      item.textContent = `${p.name} (Adet: ${p.stock_count})`;
+      list.appendChild(item);
+    });
+  }
+
+  document.getElementById('aircraftSelect').addEventListener('change', loadParts);
+
+  // Sayfa açıldığında ilk işlemler
+  fetchTeamName();
+  fetchAircrafts();
+  fetchTeamParts(userData.team);
+  loadAllPartsForTeam();
+</script>
+{% endblock %}

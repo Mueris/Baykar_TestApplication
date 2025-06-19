@@ -1,0 +1,94 @@
+{% extends "aircraft_app/base.html" %}
+
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-body">
+        <h4 class="card-title text-center mb-4">Hava Aracı Üret</h4>
+        <form id="produce-form">
+          <div class="mb-3">
+            <label for="aircraft" class="form-label">Uçak Seç</label>
+            <select id="aircraft" class="form-select" required></select>
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-success" type="submit">Üret</button>
+          </div>
+        </form>
+        <div id="response" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Üretilmiş Uçaklar Listesi -->
+<div class="row justify-content-center mt-5">
+  <div class="col-md-8">
+    <h5 class="text-center">Üretilmiş Uçaklar</h5>
+    <ul id="producedList" class="list-group"></ul>
+  </div>
+</div>
+
+<script>
+  async function loadAircrafts() {
+    const res = await fetch('/app/aircrafts/');
+    const data = await res.json();
+    const sel = document.getElementById('aircraft');
+    sel.innerHTML = "";
+    data.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function listProducedAircrafts() {
+    const res = await fetch('/app/produced_aircrafts/');
+    const data = await res.json();
+    const list = document.getElementById('producedList');
+    list.innerHTML = "";
+
+    if (data.length === 0) {
+      const li = document.createElement('li');
+      li.className = "list-group-item";
+      li.textContent = "Henüz uçak üretilmemiş.";
+      list.appendChild(li);
+      return;
+    }
+
+    data.forEach(item => {
+      const li = document.createElement('li');
+      li.className = "list-group-item";
+      li.textContent = `${item.aircraftModel.name} → ${item.production_date}`;
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById('produce-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const aircraftId = document.getElementById('aircraft').value;
+
+    const res = await fetch('/app/produce-aircraft/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ aircraft_id: aircraftId })
+    });
+
+    const json = await res.json();
+    const div = document.getElementById('response');
+    if (res.ok) {
+      div.innerHTML = `<div class="alert alert-success">${json.message}</div>`;
+      await listProducedAircrafts(); // üretim sonrası liste güncelle
+    } else {
+      div.innerHTML = `<div class="alert alert-danger">${json.error || 'Üretim başarısız oldu.'}</div>`;
+    }
+  });
+
+  loadAircrafts();
+  listProducedAircrafts();  // sayfa açıldığında listeyi getir
+</script>
+{% endblock %}

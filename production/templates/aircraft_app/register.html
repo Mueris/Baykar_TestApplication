@@ -1,0 +1,83 @@
+{% extends "aircraft_app/base.html" %}
+{% block title %}Register - Aircraft Production{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title text-center">Register Personel</h4>
+        <form id="registerForm">
+          <div class="mb-3">
+            <label for="userName" class="form-label">User Name</label>
+            <input type="text" class="form-control" id="userName" required>
+          </div>
+          <div class="mb-3">
+            <label for="firstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="firstName" required>
+          </div>
+          <div class="mb-3">
+            <label for="lastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="lastName" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" required>
+          </div>
+          <div class="mb-3">
+            <label for="team" class="form-label">Team ID</label>
+            <input type="number" class="form-control" id="team" required>
+          </div>
+          <input type="hidden" id="is_active" value="true">
+          <input type="hidden" id="is_admin" value="false">
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success">Register</button>
+          </div>
+          <div id="resultMessage" class="mt-2 text-center"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const data = {
+    username: document.getElementById('userName').value,
+    first_name: document.getElementById('firstName').value,
+    last_name: document.getElementById('lastName').value,
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value,
+    team: parseInt(document.getElementById('team').value),
+    is_active: true,
+    is_admin: false
+  };
+
+  const response = await fetch('/app/register/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  const messageBox = document.getElementById('resultMessage');
+
+  if (response.ok) {
+    messageBox.textContent = "Registration successful! Redirecting to login...";
+    messageBox.classList.add('text-success');
+    setTimeout(() => {
+      window.location.href = '/login/';
+    }, 1500);
+  } else {
+    const error = await response.json();
+    messageBox.textContent = "Registration failed: " + JSON.stringify(error);
+    messageBox.classList.add('text-danger');
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "aircraft_app/base.html" %}
+{% block title %}Login - Aircraft Production{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow">
+      <div class="card-body">
+        <h4 class="card-title text-center">Login</h4>
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" required>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Log In</button>
+          </div>
+          <div id="loginError" class="text-danger mt-2" style="display: none;">Invalid credentials</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  
+  const response = await fetch('/app/login/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    // Access nested token properties
+    localStorage.setItem('access', data.access);
+    localStorage.setItem('refresh', data.refresh);
+    localStorage.setItem('loggedInUser', JSON.stringify(data.user));
+    window.location.href = "/app/personelScreen/";
+} else {
+    document.getElementById('loginError').style.display = 'block';
+}
+});
+</script>
+{% endblock %}

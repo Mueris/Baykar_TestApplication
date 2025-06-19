@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:17  # Use PostgreSQL 17
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: aircraft_db
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "aircraft_db"]
+      interval: 10s  # Check every 10 seconds
+      retries: 5     # Retry 5 times before marking as unhealthy
+      start_period: 15s  # Wait for 15 seconds before starting health checks
+      timeout: 5s   # Timeout after 5 seconds if the test fails
+
+  web:
+    build: .
+    command: >
+      /bin/bash -c "
+        until pg_isready -h db -p 5432; do
+          echo 'Waiting for db...';
+          sleep 5;
+        done;
+        python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"  # Expose Django application
+    depends_on:
+      - db  # Ensure the db is started first

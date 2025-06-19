@@ -1,0 +1,101 @@
+{% extends "aircraft_app/base.html" %}
+{% block title %}Team Parts{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Takım Parçaları</h2>
+
+  <!-- Add Part Form -->
+  <form id="addPartForm" class="row g-2 mb-4">
+    <div class="col-md-4">
+      <input type="text" id="partName" class="form-control" placeholder="Parça Adı" required>
+    </div>
+    <div class="col-md-3">
+      <input type="number" id="stockCount" class="form-control" placeholder="Stok Sayısı" required>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-success w-100">Parça Ekle</button>
+    </div>
+  </form>
+
+  <!-- Parts Table -->
+  <table class="table table-bordered" id="partsTable">
+    <thead class="table-light">
+      <tr>
+        <th>Ad</th>
+        <th>Stok</th>
+        <th>İşlemler</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const teamId = localStorage.getItem('team_id');
+const token = localStorage.getItem('access');
+
+async function loadParts() {
+  const res = await fetch('/app/parts/', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  const tbody = document.querySelector('#partsTable tbody');
+  tbody.innerHTML = '';
+  data.forEach(part => {
+    if (part.team === parseInt(teamId)) {
+      tbody.innerHTML += `
+        <tr>
+          <td><input class="form-control form-control-sm" value="${part.name}" data-id="${part.id}" data-type="name"></td>
+          <td><input class="form-control form-control-sm" type="number" value="${part.stock_count}" data-id="${part.id}" data-type="stock"></td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="updatePart(${part.id})">Güncelle</button>
+            <button class="btn btn-danger btn-sm" onclick="deletePart(${part.id})">Geri Dönüşüm</button>
+          </td>
+        </tr>
+      `;
+    }
+  });
+}
+
+async function updatePart(id) {
+  const name = document.querySelector(`input[data-id="${id}"][data-type="name"]`).value;
+  const stock = document.querySelector(`input[data-id="${id}"][data-type="stock"]`).value;
+  await fetch(`/app/parts/${id}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ name: name, stock_count: stock, team: teamId })
+  });
+  loadParts();
+}
+
+async function deletePart(id) {
+  await fetch(`/app/parts/${id}/`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  loadParts();
+}
+
+document.getElementById('addPartForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const name = document.getElementById('partName').value;
+  const stock = document.getElementById('stockCount').value;
+  await fetch('/app/parts/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ name: name, stock_count: stock, team: teamId })
+  });
+  this.reset();
+  loadParts();
+});
+
+loadParts();
+</script>
+{% endblock %}

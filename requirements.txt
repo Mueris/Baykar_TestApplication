@@ -1,0 +1,8 @@
+Django==3.2.7  # or the specific version you're using
+PyMySQL==1.0.2  # This is for connecting to MySQL databases
+djangorestframework==3.12.4
+psycopg2-binary==2.9.10
+djangorestframework-simplejwt==4.8.0  # For JWT Authentication
+django-cors-headers==3.7.0  # For handling Cross-Origin Resource Sharing (CORS)
+dj-rest-auth
+django-allauth

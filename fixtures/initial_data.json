@@ -1,0 +1,105 @@
+[
+    {
+        "model": "production.part",
+        "pk": 1,
+        "fields": {
+            "name": "Kanat",
+            "part_type": "Kanat",
+            "aircraft": 1,
+            "is_recycled": false
+        }
+    },
+    {
+        "model": "production.part",
+        "pk": 2,
+        "fields": {
+            "name": "Gövde",
+            "part_type": "Gövde",
+            "aircraft": 1,
+            "is_recycled": false
+        }
+    },
+    {
+        "model": "production.part",
+        "pk": 3,
+        "fields": {
+            "name": "Kuyruk",
+            "part_type": "Kuyruk",
+            "aircraft": 1,
+            "is_recycled": false
+        }
+    },
+    {
+        "model": "production.part",
+        "pk": 4,
+        "fields": {
+            "name": "Aviyonik",
+            "part_type": "Aviyonik",
+            "aircraft": 1,
+            "is_recycled": false
+        }
+    },
+    {
+        "model": "production.aircraft",
+        "pk": 1,
+        "fields": {
+            "name": "TB2"
+        }
+    },
+    {
+        "model": "production.aircraft",
+        "pk": 2,
+        "fields": {
+            "name": "TB3"
+        }
+    },
+    {
+        "model": "production.aircraft",
+        "pk": 3,
+        "fields": {
+            "name": "AKINCI"
+        }
+    },
+    {
+        "model": "production.aircraft",
+        "pk": 4,
+        "fields": {
+            "name": "KIZILELMA"
+        }
+    },
+    {
+        "model": "production.team",
+        "pk": 1,
+        "fields": {
+            "name": "Kanat Takımı"
+        }
+    },
+    {
+        "model": "production.team",
+        "pk": 2,
+        "fields": {
+            "name": "Gövde Takımı"
+        }
+    },
+    {
+        "model": "production.team",
+        "pk": 3,
+        "fields": {
+            "name": "Kuyruk Takımı"
+        }
+    },
+    {
+        "model": "production.team",
+        "pk": 4,
+        "fields": {
+            "name": "Aviyonik Takımı"
+        }
+    },
+    {
+        "model": "production.team",
+        "pk": 5,
+        "fields": {
+            "name": "Montaj Takımı"
+        }
+    }
+]
