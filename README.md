@@ -8,6 +8,8 @@ user1 - Gövde Takımı
 user2 - Kuyruk Takımı
 user3 - Aviyonik Takımı
 user4 - Montaj Takımı
+
+Tüm Kullanıcıların Şifresi 123 olarak verilmiştir. Bu şifre ile giriş yapabilirsiniz. 
 Olmak üzere kullanıcılar sistemde kayıtlıdır. İlgili özelliği denemek için ilgili kullanıcı ile login yapınız. Uçak üretmek için montaj takımı üyesine login yapınız.
 Tüm fonksiyonlar yerine getirilmiştir. Uygulamanın birkaç görseli aşağıdadır.
 
